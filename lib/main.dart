@@ -1,27 +1,34 @@
 import 'package:flutter/material.dart';
 import 'dart:math';
+import 'bubbleSort.dart';
+import 'quickSort.dart';
+import 'insertionSort.dart';
 
-void main() => runApp(MyApp());
+
+
+void main() => runApp(const MyApp());
 
 class MyApp extends StatelessWidget {
+  const MyApp({super.key});
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'BinarySort',
+      title: 'Sort',
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home: BinarySort(),
+      home: Sort(),
     );
   }
 }
 
-class BinarySort extends StatefulWidget {
+class Sort extends StatefulWidget {
   @override
-  _BinarySortState createState() => _BinarySortState();
+  _Sort createState() => _Sort();
 }
 
-class _BinarySortState extends State<BinarySort> {
+class _Sort extends State<Sort> {
   List<int> data = [];
   int numElements = 0;
 
@@ -41,21 +48,30 @@ class _BinarySortState extends State<BinarySort> {
     });
   }
 
-  void handleSort() {
-    List<int> sortedData = [...data];
-    for (int i = 1; i < sortedData.length; i++) {
-      int key = sortedData[i];
-      int j = i - 1;
-      while (j >= 0 && sortedData[j] > key) {
-        sortedData[j + 1] = sortedData[j];
-        j = j - 1;
-      }
-      sortedData[j + 1] = key;
-    }
+  void handleQuickSort() {
+    int high = data.length - 1;
+    int low = 0;
+    List<int> sortedData =  quickSort(data,low,high);
     setState(() {
       data = sortedData;
     });
   }
+
+  void handleBubbleSort() {
+    List<int> sortedData =  bubbleSort(data);
+    setState(() {
+      data = sortedData;
+    });
+  }
+
+  void handleInsertionSort() {
+    List<int> sortedData =  insertionSort(data);
+    setState(() {
+      data = sortedData;
+    });
+  }
+
+
 
   void handleClear() {
     setState(() {
@@ -80,23 +96,39 @@ class _BinarySortState extends State<BinarySort> {
             onChanged: handleNumElements,
           ),
         ),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          children: [
-            ElevatedButton(
-              onPressed: handleAdd,
-              child: Text('Generate'),
-            ),
-            ElevatedButton(
-              onPressed: handleSort,
-              child: Text('Sort'),
-            ),
-            ElevatedButton(
-              onPressed: handleClear,
-              child: Text('Clear'),
-            ),
-          ],
-        ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    ElevatedButton(
+                      onPressed: handleAdd,
+                      child: const Text('Generate'),
+                    ),
+                    ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.deepOrange,
+                      ),
+                      onPressed: handleClear,
+                      child: const Text('Clear'),
+                    ),
+                  ],
+                ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    ElevatedButton(
+                      onPressed: handleQuickSort,
+                      child: const Text('Quick Sort'),
+                    ),
+                    ElevatedButton(
+                      onPressed: handleBubbleSort,
+                      child: const Text('Bubble Sort'),
+                    ),
+                    ElevatedButton(
+                      onPressed: handleInsertionSort,
+                      child: const Text('Insertion Sort'),
+                    ),
+                  ],
+                ),
         Container(
         padding: EdgeInsets.only(top: 20),
     child: Wrap(
@@ -105,17 +137,17 @@ class _BinarySortState extends State<BinarySort> {
     children: data
         .map(
     (item) => Container(
-    padding: EdgeInsets.all(10),
-      child: Text(
-        '$item',
-        style: TextStyle(
-          fontSize: 20,
-        ),
-      ),
+    padding: const EdgeInsets.all(10),
       decoration: BoxDecoration(
         border: Border.all(
           color: Colors.blue,
           width: 2,
+        ),
+      ),
+      child: Text(
+        '$item',
+        style: TextStyle(
+          fontSize: 20,
         ),
       ),
     ),
