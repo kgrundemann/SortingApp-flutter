@@ -1,16 +1,14 @@
-import 'package:flutter/material.dart';
 import 'dart:math';
+
+import 'package:flutter/material.dart';
+
 import 'bubbleSort.dart';
-import 'quickSort.dart';
 import 'insertionSort.dart';
+import 'quickSort.dart';
 
-
-
-void main() => runApp(const MyApp());
+void main() => runApp(MyApp());
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
-
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -25,12 +23,14 @@ class MyApp extends StatelessWidget {
 
 class Sort extends StatefulWidget {
   @override
-  _Sort createState() => _Sort();
+  _SortState createState() => _SortState();
 }
 
-class _Sort extends State<Sort> {
+class _SortState extends State<Sort> {
   List<int> data = [];
   int numElements = 0;
+  int numOfRuns = 0;
+  String results = "";
 
   void handleNumElements(String text) {
     setState(() {
@@ -51,27 +51,42 @@ class _Sort extends State<Sort> {
   void handleQuickSort() {
     int high = data.length - 1;
     int low = 0;
-    List<int> sortedData =  quickSort(data,low,high);
+    List<int> sortedData = quickSort(data, low, high);
     setState(() {
       data = sortedData;
     });
   }
 
   void handleBubbleSort() {
-    List<int> sortedData =  bubbleSort(data);
+    List<int> sortedData = bubbleSort(data);
     setState(() {
       data = sortedData;
     });
   }
 
   void handleInsertionSort() {
-    List<int> sortedData =  insertionSort(data);
+    List<int> sortedData = insertionSort(data);
     setState(() {
       data = sortedData;
     });
   }
 
-
+  void runBenchmark(Function testFunction) {
+    List<double> runtimes = [];
+    for (int i = 0; i < numOfRuns; i++) {
+      int start = DateTime.now().millisecondsSinceEpoch;
+      setState(() {
+        data = testFunction(data);
+      });
+      int end = DateTime.now().millisecondsSinceEpoch;
+      double total = (end - start) as double;
+      runtimes.add(total);
+    }
+    results = "Results for $numOfRuns runs:\n";
+    results += "Max: ${runtimes.reduce(max)}";
+    results += "Min: ${runtimes.reduce(min)}";
+    results += "Average: ${runtimes.reduce((a, b) => a + b) / numOfRuns}\n";
+  }
 
   void handleClear() {
     setState(() {
@@ -83,81 +98,106 @@ class _Sort extends State<Sort> {
   Widget build(BuildContext context) {
     return Scaffold(
         body: SingleChildScrollView(
-          padding: EdgeInsets.only(top: 50, left: 20, right: 20, bottom: 20),
-          child: Column(
-              children: [
-          Container(
-          padding: EdgeInsets.only(bottom: 20),
-          child: TextField(
-            keyboardType: TextInputType.number,
-            decoration: InputDecoration(
-              hintText: 'Enter number of elements',
-            ),
-            onChanged: handleNumElements,
-          ),
-        ),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-                    ElevatedButton(
-                      onPressed: handleAdd,
-                      child: const Text('Generate'),
+      child: Container(
+        padding: const EdgeInsets.all(20),
+        margin: const EdgeInsets.only(top: 50),
+        child: Column(
+          children: <Widget>[
+            Container(
+              child: Column(
+                children: <Widget>[
+                  TextField(
+                    onChanged: handleNumElements,
+                    decoration: const InputDecoration(
+                      hintText: "Enter number of elements",
                     ),
-                    ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.deepOrange,
+                    keyboardType: TextInputType.number,
+                  ),
+                  Container(
+                    padding: const EdgeInsets.only(top: 20),
+                    child: TextField(
+                      onChanged: (text) {
+                        setState(() {
+                          numOfRuns = int.parse(text);
+                        });
+                      },
+                      decoration: const InputDecoration(
+                        hintText: "Enter number of runs for test",
                       ),
-                      onPressed: handleClear,
-                      child: const Text('Clear'),
+                      keyboardType: TextInputType.number,
                     ),
-                  ],
-                ),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-                    ElevatedButton(
-                      onPressed: handleQuickSort,
-                      child: const Text('Quick Sort'),
+                  ),
+                ],
+              ),
+            ),
+            Container(
+              padding: const EdgeInsets.only(top: 20),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  ElevatedButton(
+                    onPressed: handleAdd,
+                    child: const Text('Generate'),
+                  ),
+                  ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.deepOrange,
                     ),
-                    ElevatedButton(
-                      onPressed: handleBubbleSort,
-                      child: const Text('Bubble Sort'),
-                    ),
-                    ElevatedButton(
-                      onPressed: handleInsertionSort,
-                      child: const Text('Insertion Sort'),
-                    ),
-                  ],
-                ),
-        Container(
-        padding: EdgeInsets.only(top: 20),
-    child: Wrap(
-    spacing: 10,
-    runSpacing: 10,
-    children: data
-        .map(
-    (item) => Container(
-    padding: const EdgeInsets.all(10),
-      decoration: BoxDecoration(
-        border: Border.all(
-          color: Colors.blue,
-          width: 2,
+                    onPressed: handleClear,
+                    child: const Text('Clear'),
+                  ),
+                ],
+              ),
+            ),
+            Container(
+              padding: const EdgeInsets.only(top: 20),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  ElevatedButton(
+                    onPressed: handleQuickSort,
+                    child: const Text('Quick Sort'),
+                  ),
+                  ElevatedButton(
+                    onPressed: handleBubbleSort,
+                    child: const Text('Bubble Sort'),
+                  ),
+                  ElevatedButton(
+                    onPressed: handleInsertionSort,
+                    child: const Text('Insertion Sort'),
+                  ),
+                ],
+              ),
+            ),
+            Container(
+              padding: const EdgeInsets.only(top: 20),
+              child: Wrap(
+                spacing: 10,
+                runSpacing: 10,
+                children: data
+                    .map(
+                      (item) => Container(
+                        padding: const EdgeInsets.all(10),
+                        decoration: BoxDecoration(
+                          border: Border.all(
+                            color: Colors.blue,
+                            width: 2,
+                          ),
+                        ),
+                        child: Text(
+                          item.toString(),
+                          style: const TextStyle(
+                            fontSize: 20,
+                          ),
+                        ),
+                      ),
+                    )
+                    .toList(),
+              ),
+            ),
+          ],
         ),
       ),
-      child: Text(
-        '$item',
-        style: TextStyle(
-          fontSize: 20,
-        ),
-      ),
-    ),
-    )
-        .toList(),
-    ),
-        ),
-              ],
-          ),
-        ),
-    );
+    ));
   }
 }
